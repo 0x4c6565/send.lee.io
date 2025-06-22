@@ -238,7 +238,7 @@
                                 // Add completion details
                                 const completionDetails = document.createElement("div");
                                 completionDetails.className = "text-xs text-gray-500 mt-1";
-                                completionDetails.textContent = `ID: ${data.id}, Passphrase: ${passphrase}`;
+                                completionDetails.textContent = `{{ config('app.url') }}/d/${data.id}#${passphrase}`;
 
                                 // Replace status container with completion info
                                 statusContainer.innerHTML = '';

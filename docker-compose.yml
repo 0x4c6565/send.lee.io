@@ -7,19 +7,27 @@ services:
       - .env.db
     ports:
       - 3306:3306
-  # app:
-  #   build:
-  #     context: ./
-  #     dockerfile: Dockerfile
-  #   restart: on-failure
-  #   ports:
-  #     - 8080:8080
-  #   volumes:
-  #     - ./config.yaml:/app/config.yaml
-  #   env_file:
-  #     - .env
-  #   depends_on:
-  #     - mysql
+  app:
+    build:
+      context: ./
+      dockerfile: Dockerfile
+    restart: on-failure
+    ports:
+      - 8080:8080
+    volumes:
+      - ./.env:/app/.env
+    depends_on:
+      - mysql
+  scheduler:
+    build:
+      context: ./
+      dockerfile: Dockerfile
+    restart: on-failure
+    command: scheduler
+    volumes:
+      - ./.env:/app/.env
+    depends_on:
+      - mysql
   phpmyadmin:
     image: phpmyadmin/phpmyadmin:5.2
     ports:

@@ -76,6 +76,9 @@
         var decryptWorker = new Worker("/js/decrypt-worker.js");
 
         function decryptData(ciphertext, passphrase, callback) {
+            if (!passphrase) {
+                return ciphertext; // No passphrase, return as is
+            }
             var payload = {
                 ciphertext: ciphertext,
                 passphrase: passphrase
@@ -92,11 +95,6 @@
         function init() {
             if (!fileId) {
                 showError('No file ID provided in URL');
-                return;
-            }
-
-            if (!passphrase) {
-                showError('No passphrase provided in URL hash');
                 return;
             }
 
@@ -177,12 +175,18 @@
 
             xhr.addEventListener('load', function() {
                 if (xhr.status === 200) {
+                    if (!passphrase) {
+                        // If no passphrase, save the file directly
+                        saveFile(xhr.responseText);
+                        return;
+                    }
                     updateStatus('Decrypting file...', 'text-blue-600');
                     progressText.textContent = 'Decrypting...';
 
                     try {
-                        decryptAndSave(xhr.responseText);
+                        decryptAndSaveFile(xhr.responseText);
                     } catch (e) {
+                        console(e);
                         showError('Failed to decrypt file');
                         resetDownload();
                     }
@@ -199,8 +203,38 @@
             xhr.send();
         }
 
+        function saveFile(data) {
+            try {
+                // Convert decrypted data back to blob
+                const blob = dataUrlToBlob(data);
+
+                // Create download link
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = getOriginalFileName();
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+
+                updateStatus('Download completed successfully!', 'text-green-600');
+                progressText.textContent = 'Complete';
+                progressBar.style.width = '100%';
+
+                // Reset after a delay
+                setTimeout(() => {
+                    resetDownload();
+                }, 3000);
+
+            } catch (e) {
+                showError('Failed to save file');
+                resetDownload();
+            }
+        }
+
         // Decrypt and save file
-        function decryptAndSave(encryptedData) {
+        function decryptAndSaveFile(encryptedData) {
             decryptData(encryptedData, passphrase, function(decrypted) {
                 if (decrypted.success !== true) {
                     showError('Failed to decrypt file: ' + (decrypted.data || 'Invalid passphrase'));
@@ -208,33 +242,7 @@
                     return;
                 }
 
-                try {
-                    // Convert decrypted data back to blob
-                    const blob = dataUrlToBlob(decrypted.data);
-
-                    // Create download link
-                    const url = URL.createObjectURL(blob);
-                    const a = document.createElement('a');
-                    a.href = url;
-                    a.download = getOriginalFileName();
-                    document.body.appendChild(a);
-                    a.click();
-                    document.body.removeChild(a);
-                    URL.revokeObjectURL(url);
-
-                    updateStatus('Download completed successfully!', 'text-green-600');
-                    progressText.textContent = 'Complete';
-                    progressBar.style.width = '100%';
-
-                    // Reset after a delay
-                    setTimeout(() => {
-                        resetDownload();
-                    }, 3000);
-
-                } catch (e) {
-                    showError('Failed to save file');
-                    resetDownload();
-                }
+                return saveFile(decrypted.data);
             });
         }
 
