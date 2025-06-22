@@ -137,7 +137,7 @@
                                     {{ $uploadSession->created_at->format('M j, Y g:i A') }}
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                    <form method="POST" action="{{ route('uploadsession.delete', $uploadSession->id) }}" class="inline-block" onsubmit="return confirm('Are you sure you want to delete this upload session?');" onclick="event.stopPropagation();">
+                                    <form method="POST" action="/sessions/{{ $uploadSession->id }}/delete" class="inline-block" onsubmit="return confirm('Are you sure you want to delete this upload session?');" onclick="event.stopPropagation();">
                                         @csrf
                                         <button type="submit" class="text-red-600 hover:text-red-900 transition duration-200">
                                             Delete

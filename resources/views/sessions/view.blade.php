@@ -21,7 +21,7 @@
                     <h2 class="text-xl font-semibold text-gray-700">Upload Session: {{ $session->id }}</h2>
 
                     <!-- Delete Button -->
-                    <form method="POST" action="{{ route('uploadsession.delete', $session->id) }}" class="inline-block" onsubmit="return confirm('Are you sure you want to delete this upload session? This action cannot be undone.');">
+                    <form method="POST" action="/sessions/{{ $uploadSession->id }}/delete" class="inline-block" onsubmit="return confirm('Are you sure you want to delete this upload session? This action cannot be undone.');">
                         @csrf
                         <button type="submit" class="inline-flex items-center px-4 py-2 bg-red-500 text-white rounded-md font-medium hover:bg-red-600 transition duration-200 shadow-sm">
                             <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
