@@ -12,7 +12,7 @@
 <body class="flex items-center justify-center min-h-screen bg-gray-100">
     <div class="w-full max-w-md p-8 bg-white rounded-lg shadow-lg">
         <h2 class="text-2xl font-semibold text-gray-700 text-center mb-6">Login</h2>
-        <form action="/login" method="POST" class="space-y-6">
+        <form action="{{ route('login') }}" method="POST" class="space-y-6">
             @csrf
             <div class="relative">
                 <input
