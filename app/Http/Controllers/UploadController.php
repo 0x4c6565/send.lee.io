@@ -51,6 +51,10 @@ class UploadController extends Controller
         $iv = openssl_random_pseudo_bytes(openssl_cipher_iv_length(config('upload.cipher')));
 
         $uploadPath = $upload->getUploadFilePath();
+        if (!file_exists(dirname($uploadPath))) {
+            mkdir(dirname($uploadPath), 0755, true);
+        }
+
         $encryptionKey = $request->query('encryptionKey', config('upload.default_encryption_key'));
 
         try {
