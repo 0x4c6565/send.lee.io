@@ -10,7 +10,7 @@ class UploadSessionController extends Controller
 {
     public function newSessionView(Request $request)
     {
-        return view('sessions/view', ['session' => $this->newSession($request)]);
+        return view('sessions/view', ['uploadSession' => $this->newSession($request)]);
     }
 
     public function newSessionApi(Request $request)
@@ -54,7 +54,7 @@ class UploadSessionController extends Controller
     public function index(Request $request)
     {
         $sessions = UploadSession::all();
-        return view('sessions/index', ['sessions' => $sessions]);
+        return view('sessions/index', ['uploadSessions' => $sessions]);
     }
 
     public function viewSession(Request $request, $id)
@@ -63,6 +63,6 @@ class UploadSessionController extends Controller
         if (!$session) {
             return redirect('sessions')->with('error', 'Session not found.');
         }
-        return view('sessions/view', ['session' => $session]);
+        return view('sessions/view', ['uploadSession' => $session]);
     }
 }

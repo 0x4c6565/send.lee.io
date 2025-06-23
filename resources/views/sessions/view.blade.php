@@ -18,7 +18,7 @@
             <!-- Session Details Card -->
             <div class="w-full max-w-2xl bg-white rounded-lg shadow-lg overflow-hidden">
                 <div class="px-6 py-4 bg-gray-50 border-b flex justify-between items-center">
-                    <h2 class="text-xl font-semibold text-gray-700">Upload Session: {{ $session->id }}</h2>
+                    <h2 class="text-xl font-semibold text-gray-700">Upload Session: {{ $uploadSession->id }}</h2>
 
                     <!-- Delete Button -->
                     <form method="POST" action="/sessions/{{ $uploadSession->id }}/delete" class="inline-block" onsubmit="return confirm('Are you sure you want to delete this upload session? This action cannot be undone.');">
@@ -36,23 +36,23 @@
                     <!-- Description -->
                     <div>
                         <h3 class="text-sm font-medium text-gray-500 uppercase tracking-wide mb-2">Description</h3>
-                        <p class="text-gray-900">{{ $session->description ?: 'No description provided' }}</p>
+                        <p class="text-gray-900">{{ $uploadSession->description ?: 'No description provided' }}</p>
                     </div>
 
                     <!-- Upload Session Expiry -->
                     <div>
                         <h3 class="text-sm font-medium text-gray-500 uppercase tracking-wide mb-2">Upload Session Expiry</h3>
                         <p class="text-gray-900">
-                            @if($session->expires == -1)
+                            @if($uploadSession->expires == -1)
                             <span class="text-orange-600 font-medium">Burn after upload</span>
                             <span class="text-sm text-gray-500 block">Session will be deleted immediately after first upload</span>
-                            @elseif($session->expires == 0)
+                            @elseif($uploadSession->expires == 0)
                             <span class="text-green-600 font-medium">Never expires</span>
                             <span class="text-sm text-gray-500 block">Session will remain active indefinitely</span>
                             @else
-                            <span class="font-medium">{{ \Carbon\Carbon::createFromTimestamp($session->expires)->format('M j, Y g:i A') }}</span>
+                            <span class="font-medium">{{ \Carbon\Carbon::createFromTimestamp($uploadSession->expires)->format('M j, Y g:i A') }}</span>
                             <span class="text-sm text-gray-500 block">
-                                {{ \Carbon\Carbon::createFromTimestamp($session->expires)->diffForHumans() }}
+                                {{ \Carbon\Carbon::createFromTimestamp($uploadSession->expires)->diffForHumans() }}
                             </span>
                             @endif
                         </p>
@@ -62,16 +62,16 @@
                     <div>
                         <h3 class="text-sm font-medium text-gray-500 uppercase tracking-wide mb-2">Configured Upload Expiry</h3>
                         <p class="text-gray-900">
-                            @if($session->upload_expires == -1)
+                            @if($uploadSession->upload_expires == -1)
                             <span class="text-orange-600 font-medium">Burn after download</span>
                             <span class="text-sm text-gray-500 block">Uploaded files will be deleted after first download</span>
-                            @elseif($session->upload_expires == 0)
+                            @elseif($uploadSession->upload_expires == 0)
                             <span class="text-green-600 font-medium">Never expires</span>
                             <span class="text-sm text-gray-500 block">Uploaded files will remain available indefinitely</span>
                             @else
-                            <span class="font-medium">{{ \Carbon\Carbon::createFromTimestamp($session->upload_expires)->format('M j, Y g:i A') }}</span>
+                            <span class="font-medium">{{ \Carbon\Carbon::createFromTimestamp($uploadSession->upload_expires)->format('M j, Y g:i A') }}</span>
                             <span class="text-sm text-gray-500 block">
-                                Uploaded files will expire {{ \Carbon\Carbon::createFromTimestamp($session->upload_expires)->diffForHumans() }}
+                                Uploaded files will expire {{ \Carbon\Carbon::createFromTimestamp($uploadSession->upload_expires)->diffForHumans() }}
                             </span>
                             @endif
                         </p>
@@ -81,8 +81,8 @@
                     <div>
                         <h3 class="text-sm font-medium text-gray-500 uppercase tracking-wide mb-2">Created</h3>
                         <p class="text-gray-900">
-                            <span class="font-medium">{{ $session->created_at->format('M j, Y g:i A') }}</span>
-                            <span class="text-sm text-gray-500 block">{{ $session->created_at->diffForHumans() }}</span>
+                            <span class="font-medium">{{ $uploadSession->created_at->format('M j, Y g:i A') }}</span>
+                            <span class="text-sm text-gray-500 block">{{ $uploadSession->created_at->diffForHumans() }}</span>
                         </p>
                     </div>
                 </div>
@@ -100,7 +100,7 @@
                     <div class="mb-4">
                         <label class="block text-sm font-medium text-gray-700 mb-2">cURL Command:</label>
                         <div class="relative">
-                            <code class="block w-full p-3 bg-gray-100 border border-gray-300 rounded-md text-sm font-mono break-all whitespace-pre-wrap" id="curl-command">curl -H'X-UPLOAD-SESSION-ID: {{ $session->token }}' --upload-file myfile.sh https://send.lee.io</code>
+                            <code class="block w-full p-3 bg-gray-100 border border-gray-300 rounded-md text-sm font-mono break-all whitespace-pre-wrap" id="curl-command">curl -H'X-UPLOAD-SESSION-ID: {{ $uploadSession->token }}' --upload-file myfile.sh https://send.lee.io</code>
                             <button onclick="copyToClipboard('curl-command')" class="absolute top-2 right-2 px-2 py-1 text-xs bg-white border border-gray-300 rounded hover:bg-gray-50 transition duration-200">
                                 Copy
                             </button>

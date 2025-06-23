@@ -82,7 +82,7 @@
             </div>
             @endif
 
-            @if(isset($sessions) && $sessions->count() > 0)
+            @if(isset($uploadSessions) && $uploadSessions->count() > 0)
             <div class="w-full max-w-4xl bg-white rounded-lg shadow-lg overflow-hidden mt-6">
                 <div class="px-6 py-4 bg-gray-50 border-b flex justify-between items-center">
                     <h3 class="text-lg font-semibold text-gray-700">Existing Upload Sessions</h3>
@@ -107,7 +107,7 @@
                             </tr>
                         </thead>
                         <tbody class="bg-white divide-y divide-gray-200">
-                            @foreach($sessions as $uploadSession)
+                            @foreach($uploadSessions as $uploadSession)
                             <tr class="hover:bg-gray-50 cursor-pointer transition duration-200" onclick="window.location.href='/sessions/{{ $uploadSession->id }}'">
                                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-blue-600 hover:text-blue-800">
                                     {{ $uploadSession->id }}
