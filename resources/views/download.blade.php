@@ -177,7 +177,7 @@
                 if (xhr.status === 200) {
                     if (!passphrase) {
                         // If no passphrase, save the file directly
-                        saveFile(xhr.responseText);
+                        saveBlob(xhr.response);
                         return;
                     }
                     updateStatus('Decrypting file...', 'text-blue-600');
@@ -198,39 +198,33 @@
                     resetDownload();
                 }
             });
-
+            if (!passphrase) {
+                xhr.responseType = 'blob';
+            } else {
+                xhr.responseType = 'text';
+            }
             xhr.open('GET', `/download/${fileId}`);
             xhr.send();
         }
 
-        function saveFile(data) {
-            try {
-                // Convert decrypted data back to blob
-                const blob = dataUrlToBlob(data);
+        function saveBlob(blob) {
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = getOriginalFileName();
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            updateStatus('Download completed successfully!', 'text-green-600');
+            progressText.textContent = 'Complete';
+            progressBar.style.width = '100%';
+            setTimeout(resetDownload, 3000);
+        }
 
-                // Create download link
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = getOriginalFileName();
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-                URL.revokeObjectURL(url);
-
-                updateStatus('Download completed successfully!', 'text-green-600');
-                progressText.textContent = 'Complete';
-                progressBar.style.width = '100%';
-
-                // Reset after a delay
-                setTimeout(() => {
-                    resetDownload();
-                }, 3000);
-
-            } catch (e) {
-                showError('Failed to save file');
-                resetDownload();
-            }
+        function saveFile(dataUrl) {
+            const blob = dataUrlToBlob(dataUrl);
+            saveBlob(blob);
         }
 
         // Decrypt and save file

@@ -11,7 +11,7 @@
 
                 <!-- Expiration Dropdown -->
                 <label for="expiration" class="block text-gray-700 font-medium mb-2">Expiration</label>
-                <select id="expiration" name="expiration" class="w-full p-2 border border-gray-300 rounded-md">
+                <select id="expiration" name="expiration" class="w-full p-2 border border-gray-300 rounded-md mb-4">
                     <option value="-1">Burn after download</option>
                     <option value="3600">1 Hour</option>
                     <option value="86400">1 Day</option>
@@ -19,6 +19,14 @@
                     <option value="2592000">30 Days</option>
                     <option value="0">Never</option>
                 </select>
+                <!-- Local Encryption Checkbox (NEW) -->
+                <div class="flex items-start space-x-2">
+                    <input type="checkbox" id="local-encryption" name="local_encryption" class="mt-1 h-4 w-4 text-blue-600 border-gray-300 rounded" checked>
+                    <label for="local-encryption" class="text-gray-700 text-sm leading-5">
+                        Encrypt locally before upload
+                        <span class="block text-xs text-gray-500">When enabled, files are encrypted in your browser and only a decryption key (hash) is stored in the link you share.</span>
+                    </label>
+                </div>
             </div>
 
             <!-- Original Content -->
@@ -34,7 +42,9 @@
 
                 <div id="content" class="mt-4 text-center text-gray-600"></div>
                 <!-- List of uploaded files -->
-                <ul id="file-list" class="mt-6 space-y-2"></ul>
+                <ul id="file-list" class="mt-6 space-y-2 text-sm">
+                    <!-- List items will be inserted dynamically -->
+                </ul>
             </div>
         </div>
 
@@ -43,6 +53,7 @@
             const dropZone = document.getElementById("drop-zone");
             const fileList = document.getElementById("file-list");
             const contentElement = document.getElementById("content");
+            const localEncryptionCheckbox = document.getElementById("local-encryption");
 
             //-- Encryption/Decryption --//
 
@@ -145,6 +156,8 @@
             }
 
             function uploadFile(file, uploadToken) {
+                const encryptionEnabled = localEncryptionCheckbox.checked;
+
                 var max_size_mb = 50;
                 if (file.size > (max_size_mb * 1024 * 1024)) {
                     alert('File larger than maximum supported size (' + max_size_mb + 'MB)');
@@ -153,113 +166,142 @@
 
                 // Create the list item immediately when upload begins
                 const listItem = document.createElement("li");
-                listItem.className = "p-2 bg-gray-100 rounded-md text-gray-700 flex justify-between items-center";
+                listItem.className = "p-3 bg-gray-100 rounded-md flex flex-col space-y-1";
 
+                // Top row: File info and status
+                const topRow = document.createElement("div");
+                topRow.className = "flex justify-between items-center";
+
+                // File name with truncation
                 const fileInfo = document.createElement("span");
+                fileInfo.className = "font-medium truncate max-w-[60%]";
+                fileInfo.title = file.name;
                 fileInfo.textContent = `${file.name} (${(file.size / 1024).toFixed(2)} KB)`;
 
-                const statusContainer = document.createElement("div");
-                statusContainer.className = "flex items-center space-x-2";
-
+                // Status text
                 const statusText = document.createElement("span");
-                statusText.className = "text-sm";
+                statusText.className = "text-xs text-gray-500";
                 statusText.textContent = "Preparing...";
 
+                topRow.appendChild(fileInfo);
+                topRow.appendChild(statusText);
+
+                // Progress bar
                 const progressContainer = document.createElement("div");
-                progressContainer.className = "w-24 h-2 bg-gray-300 rounded-full overflow-hidden";
-                progressContainer.style.display = "none"; // Hidden initially
+                progressContainer.className = "w-full h-2 bg-gray-300 rounded-full overflow-hidden";
+                progressContainer.style.display = "none";
 
                 const progressBar = document.createElement("div");
                 progressBar.className = "h-full bg-blue-500 transition-all duration-300";
                 progressBar.style.width = "0%";
 
                 progressContainer.appendChild(progressBar);
-                statusContainer.appendChild(statusText);
-                statusContainer.appendChild(progressContainer);
-                listItem.appendChild(fileInfo);
-                listItem.appendChild(statusContainer);
+
+                // Download link row
+                const linkRow = document.createElement("div");
+                linkRow.className = "hidden text-xs text-blue-600 truncate max-w-full cursor-pointer";
+                linkRow.title = ""; // Will set later
+
+                listItem.appendChild(topRow);
+                listItem.appendChild(progressContainer);
+                listItem.appendChild(linkRow);
                 fileList.appendChild(listItem);
 
                 PasswordGenerator.symbols = false;
                 var passphrase = PasswordGenerator.generate();
-                var reader = new FileReader();
 
-                reader.onload = function(e) {
-                    console.log('Encrypting file');
-                    statusText.textContent = "Encrypting...";
+                let uploadFileItem = function(data, encrypted) {
+                    console.log('Uploading file');
+                    statusText.textContent = "Uploading...";
+                    progressContainer.style.display = "block"; // Show progress bar
 
-                    var result = encryptData(e.target.result, passphrase, function(encrypted) {
-                        if (encrypted.success != true) {
-                            statusText.textContent = "Encryption failed";
-                            statusText.className = "text-sm text-red-500";
-                            alert('Failed to encrypt file data: ' + encrypted.data);
-                            return;
+                    // Using XMLHttpRequest (closest to original jQuery implementation)
+                    const xhr = new XMLHttpRequest();
+
+                    // Set up progress tracking
+                    xhr.upload.addEventListener("progress", function(evt) {
+                        if (evt.lengthComputable) {
+                            var percentComplete = evt.loaded / evt.total;
+                            var percentage = Math.round(percentComplete * 100);
+                            console.log("Upload progress: " + percentage + "%");
+
+                            // Update progress bar
+                            progressBar.style.width = percentage + "%";
+                            statusText.textContent = `Uploading... ${percentage}%`;
                         }
+                    }, false);
 
-                        console.log('Uploading file');
-                        statusText.textContent = "Uploading...";
-                        progressContainer.style.display = "block"; // Show progress bar
+                    // Set up error handler
+                    xhr.addEventListener("error", function() {
+                        statusText.textContent = "Upload failed";
+                        statusText.className = "text-sm text-red-500";
+                        progressContainer.style.display = "none";
+                        alert('Upload failed. Please try again later');
+                    });
 
-                        // Using XMLHttpRequest (closest to original jQuery implementation)
-                        const xhr = new XMLHttpRequest();
+                    // Set up success handler
+                    xhr.addEventListener("load", function() {
+                        if (xhr.status >= 200 && xhr.status < 300) {
+                            console.log('Upload complete');
+                            const data = JSON.parse(xhr.responseText);
 
-                        // Set up progress tracking
-                        xhr.upload.addEventListener("progress", function(evt) {
-                            if (evt.lengthComputable) {
-                                var percentComplete = evt.loaded / evt.total;
-                                var percentage = Math.round(percentComplete * 100);
-                                console.log("Upload progress: " + percentage + "%");
+                            // Update status to show completion with ID and passphrase
+                            statusText.textContent = "Complete";
+                            statusText.className = "text-xs text-green-500";
+                            progressContainer.style.display = "none";
 
-                                // Update progress bar
-                                progressBar.style.width = percentage + "%";
-                                statusText.textContent = `Uploading... ${percentage}%`;
+                            let downloadUrl = `{{ config('app.url') }}/d/${data.id}`;
+                            if (encrypted) {
+                                downloadUrl += `#${passphrase}`;
                             }
-                        }, false);
 
-                        // Set up error handler
-                        xhr.addEventListener("error", function() {
+                            // Show link
+                            linkRow.textContent = downloadUrl;
+                            linkRow.title = downloadUrl;
+                            linkRow.classList.remove("hidden");
+
+                            // Optional: Copy to clipboard on click
+                            linkRow.addEventListener("click", () => {
+                                navigator.clipboard.writeText(downloadUrl);
+                                alert("Link copied to clipboard!");
+                            });
+
+                        } else {
                             statusText.textContent = "Upload failed";
                             statusText.className = "text-sm text-red-500";
                             progressContainer.style.display = "none";
                             alert('Upload failed. Please try again later');
-                        });
-
-                        // Set up success handler
-                        xhr.addEventListener("load", function() {
-                            if (xhr.status >= 200 && xhr.status < 300) {
-                                console.log('Upload complete');
-                                const data = JSON.parse(xhr.responseText);
-
-                                // Update status to show completion with ID and passphrase
-                                statusText.textContent = "Complete";
-                                statusText.className = "text-sm text-green-500";
-                                progressContainer.style.display = "none";
-
-                                // Add completion details
-                                const completionDetails = document.createElement("div");
-                                completionDetails.className = "text-xs text-gray-500 mt-1";
-                                completionDetails.textContent = `{{ config('app.url') }}/d/${data.id}#${passphrase}`;
-
-                                // Replace status container with completion info
-                                statusContainer.innerHTML = '';
-                                statusContainer.appendChild(statusText);
-                                statusContainer.appendChild(completionDetails);
-
-                            } else {
-                                statusText.textContent = "Upload failed";
-                                statusText.className = "text-sm text-red-500";
-                                progressContainer.style.display = "none";
-                                alert('Upload failed. Please try again later');
-                            }
-                        });
-
-                        xhr.open('PUT', '/' + file.name + '?json=1');
-                        xhr.setRequestHeader('X-UPLOAD-SESSION-ID', uploadToken);
-
-                        xhr.send(encrypted.data);
+                        }
                     });
-                };
-                reader.readAsDataURL(file);
+
+                    xhr.open('PUT', '/' + file.name + '?json=1');
+                    xhr.setRequestHeader('X-UPLOAD-SESSION-ID', uploadToken);
+
+                    xhr.send(data);
+                }
+
+                if (encryptionEnabled) {
+                    let reader = new FileReader();
+                    reader.onload = function(e) {
+                        console.log('Encrypting file');
+                        statusText.textContent = "Encrypting...";
+
+                        var result = encryptData(e.target.result, passphrase, function(encrypted) {
+                            if (encrypted.success != true) {
+                                statusText.textContent = "Encryption failed";
+                                statusText.className = "text-sm text-red-500";
+                                alert('Failed to encrypt file data: ' + encrypted.data);
+                                return;
+                            }
+                            console.log('File encrypted successfully');
+                            uploadFileItem(encrypted.data, true);
+                        });
+                    };
+                    reader.readAsDataURL(file);
+                } else {
+                    console.log('Uploading file without encryption');
+                    uploadFileItem(file, false);
+                }
             }
 
             function dataUrlToBlob(strUrl) {
