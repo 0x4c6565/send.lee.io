@@ -33,6 +33,8 @@ FROM base
 
 WORKDIR /var/www/html
 
+RUN mv "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini"
+COPY .docker/upload.ini "$PHP_INI_DIR/conf.d/upload.ini"
 COPY .docker/entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 

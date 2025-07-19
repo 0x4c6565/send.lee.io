@@ -158,7 +158,7 @@
             function uploadFile(file, uploadToken) {
                 const encryptionEnabled = localEncryptionCheckbox.checked;
 
-                var max_size_mb = 50;
+                var max_size_mb = 128;
                 if (file.size > (max_size_mb * 1024 * 1024)) {
                     alert('File larger than maximum supported size (' + max_size_mb + 'MB)');
                     return;
