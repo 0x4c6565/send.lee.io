@@ -35,6 +35,7 @@ WORKDIR /var/www/html
 
 RUN mv "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini"
 RUN sed -i "s/upload_max_filesize = .*/upload_max_filesize = 256M/" "$PHP_INI_DIR/php.ini"
+RUN sed -i "s/post_max_size = .*/post_max_size = 256M/" "$PHP_INI_DIR/php.ini"
 RUN sed -i "s/max_execution_time = .*/max_execution_time = 300/" "$PHP_INI_DIR/php.ini"
 COPY .docker/entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
