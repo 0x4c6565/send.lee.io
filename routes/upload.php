@@ -7,4 +7,5 @@ Route::withoutMiddleware('web')->group(function () {
     Route::put('/{any}', [UploadController::class, 'upload']);
     Route::get('/download/{id}', [UploadController::class, 'download']);
     Route::get('/d/{id}', [UploadController::class, 'downloadForm']);
+    Route::get('/api/upload/{id}', [UploadController::class, 'getUploadApi']);
 });

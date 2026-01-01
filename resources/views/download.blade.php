@@ -134,7 +134,7 @@
         // Display file information
         function displayFileInfo(data) {
             fileName.textContent = `Name: ${data.file_name || 'Unknown'}`;
-            fileSize.textContent = `Size: ${formatFileSize(data.size || 0)}`;
+            fileSize.textContent = `Uploaded Size: ${formatFileSize(data.size || 0)}`;
 
             fileInfo.style.display = 'block';
             updateStatus('Ready to download', 'text-green-600');
