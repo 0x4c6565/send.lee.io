@@ -245,27 +245,57 @@
                             console.log('Upload complete');
                             const data = JSON.parse(xhr.responseText);
 
-                            // Update status to show completion with ID and passphrase
+                            // Update status to show completion
                             statusText.textContent = "Complete";
                             statusText.className = "text-xs text-green-500";
                             progressContainer.style.display = "none";
 
-                            let downloadUrl = `{{ config('app.url') }}/d/${data.id}`;
+                            // Decryption link (/d) and direct link (/download)
+                            let decryptionUrl = `{{ config('app.url') }}/d/${data.id}`;
                             if (encrypted) {
-                                downloadUrl += `#${passphrase}`;
+                                decryptionUrl += `#${passphrase}`;
                             }
+                            let directUrl = `{{ config('app.url') }}/download/${data.id}`;
 
-                            // Show link
-                            linkRow.textContent = downloadUrl;
-                            linkRow.title = downloadUrl;
-                            linkRow.classList.remove("hidden");
+                            // Clear previous content
+                            linkRow.innerHTML = "";
 
-                            // Optional: Copy to clipboard on click
-                            linkRow.addEventListener("click", () => {
-                                navigator.clipboard.writeText(downloadUrl);
-                                alert("Link copied to clipboard!");
+
+                            // Decryption link element
+                            const decryptionLink = document.createElement("span");
+                            decryptionLink.textContent = "Decryption Link";
+                            decryptionLink.className = "text-blue-600 underline cursor-pointer";
+                            decryptionLink.title = decryptionUrl;
+                            decryptionLink.style.marginRight = "0.5rem";
+                            decryptionLink.addEventListener("click", () => {
+                                navigator.clipboard.writeText(decryptionUrl);
+                                alert("Decryption link copied to clipboard!");
                             });
 
+                            // Separator (not clickable, no pointer events)
+                            const separator = document.createElement("span");
+                            separator.textContent = "|";
+                            separator.style.margin = "0 0.5rem";
+                            separator.style.pointerEvents = "none";
+                            separator.style.color = "#6b7280"; // Tailwind gray-500
+
+                            // Direct link element
+                            const directLink = document.createElement("span");
+                            directLink.textContent = "Direct Link";
+                            directLink.className = "text-blue-600 underline cursor-pointer";
+                            directLink.title = directUrl;
+                            directLink.style.marginLeft = "0.5rem";
+                            directLink.addEventListener("click", () => {
+                                navigator.clipboard.writeText(directUrl);
+                                alert("Direct link copied to clipboard!");
+                            });
+
+                            // Append both links, separated by a non-clickable separator
+                            linkRow.appendChild(decryptionLink);
+                            linkRow.appendChild(separator);
+                            linkRow.appendChild(directLink);
+
+                            linkRow.classList.remove("hidden");
                         } else {
                             statusText.textContent = "Upload failed";
                             statusText.className = "text-sm text-red-500";
